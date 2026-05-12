@@ -1,0 +1,17 @@
+
+> frontend@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3000
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://127.0.0.1:3000
+- Network:       http://127.0.0.1:3000
+
+✓ Starting...
+Creating turbopack project {
+  dir: 'C:\\Users\\roman\\Documents\\metodist\\site-shkola\\frontend\\frontend',
+  testMode: true
+}
+✓ Ready in 1901ms
+ GET / 200 in 1176ms (compile: 953ms, render: 224ms)
+ GET /manifest.webmanifest 200 in 105ms (compile: 91ms, render: 14ms)
+✓ Compiled in 675ms

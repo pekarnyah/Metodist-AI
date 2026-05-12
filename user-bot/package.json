@@ -1,0 +1,14 @@
+{
+  "name": "metodist-user-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Telegram cabinet bot for Metodist AI users",
+  "scripts": {
+    "dev": "node src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "grammy": "^1.38.4"
+  }
+}
