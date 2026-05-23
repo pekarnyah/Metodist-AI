@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Any
 
 from docx import Document
+from docx.table import Table
+from docx.text.paragraph import Paragraph
 
 
 def _load_env_file(env_path: Path) -> None:
@@ -35,12 +37,35 @@ def _safe_name(value: str) -> str:
 
 def _extract_docx_text(path: Path) -> str:
     doc = Document(str(path))
-    lines = [paragraph.text.strip() for paragraph in doc.paragraphs if paragraph.text.strip()]
+    lines: list[str] = []
+    for child in doc.element.body.iterchildren():
+        if child.tag.endswith("}p"):
+            paragraph = Paragraph(child, doc)
+            text = paragraph.text.strip()
+            if text:
+                lines.append(text)
+        elif child.tag.endswith("}tbl"):
+            table = Table(child, doc)
+            for row in table.rows:
+                cells = [
+                    " / ".join(paragraph.text.strip() for paragraph in cell.paragraphs if paragraph.text.strip())
+                    for cell in row.cells
+                ]
+                row_text = " | ".join(cell for cell in cells if cell).strip()
+                if row_text:
+                    lines.append(row_text)
     return "\n".join(lines).strip()
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(os.getenv(name, str(default)))
+    except ValueError:
+        return default
 
 
 async def _run_case(
@@ -76,7 +101,7 @@ async def _run_case(
             requirements=requirements,
             mode="docx",
             subject=subject,
-            context="Smoke test run for rewrite_v1 quality checks.",
+            context="Smoke test run for unified generator v2.5 quality checks.",
             source_file=None,
             source_files=None,
             request_id=f"smoke_{idx:02d}",
@@ -138,6 +163,10 @@ async def _amain() -> int:
         "Задачі на дві дії",
         "Периметр прямокутника",
     ]
+    cases_filter = [item.strip() for item in os.getenv("GENERATOR_SMOKE_CASES", "").split("|") if item.strip()]
+    if cases_filter:
+        cases = cases_filter
+    case_delay_sec = max(0.0, _env_float("GENERATOR_SMOKE_CASE_DELAY_SEC", 0.0))
     grade = "3 клас"
     subject = "Математика"
     requirements = (
@@ -161,10 +190,13 @@ async def _amain() -> int:
         )
         summaries.append(summary)
         print(f"  -> {summary['status']}")
+        if case_delay_sec and idx < len(cases):
+            print(f"  waiting {case_delay_sec:.1f}s to avoid API rate limits...")
+            await asyncio.sleep(case_delay_sec)
 
     _write_json(run_dir / "summary.json", {"run_dir": str(run_dir), "cases": summaries})
 
-    print("\n=== rewrite_v1 smoke summary ===")
+    print("\n=== generator v2.5 smoke summary ===")
     print(f"Run directory: {run_dir}")
     for item in summaries:
         print(f"- case: {item['case']}")

@@ -889,9 +889,9 @@ class LessonGenerator:
 
     async def generate_lesson_files(self, topic, grade, requirements, mode, subject, context="", source_file=None, source_files=None, request_id=None):
         if self._core_generator is None:
-            from core.lesson_rewrite_generator import LessonRewriteGenerator
+            from core.lesson_generator_v25 import LessonGeneratorV25
 
-            self._core_generator = LessonRewriteGenerator(self)
+            self._core_generator = LessonGeneratorV25(self)
         return await self._core_generator.generate_lesson_files(
             topic=topic,
             grade=grade,
@@ -7382,7 +7382,7 @@ BLUEPRINT:
                 normalize_document_model(section)
                 normalize_ordered_substeps(section)
 
-            if not selected_template and not header_fields:
+            if not selected_template and not header_fields and not document_model.get("suppress_default_title"):
                 add_paragraph_line("Конспект уроку", "Metodist Title", force_bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=10)
 
             for field in header_fields:

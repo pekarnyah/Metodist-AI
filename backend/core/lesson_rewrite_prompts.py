@@ -23,7 +23,7 @@ def _is_narrow_math_topic(topic: str, subject: str) -> bool:
             "дві дії",
             "без переходу через розряд",
             "периметр",
-            "РїСЂСЏРјРѕРєСѓС'",
+            "прямокут",
             "area",
             "perimeter",
             "rectangle",
@@ -48,7 +48,7 @@ def _extract_operation_target_number(topic_l: str) -> str:
 
 def _topic_type(topic: str) -> str:
     low = str(topic or "").lower()
-    has_mult = "РјРЅРѕР¶" in low or "multiplication" in low
+    has_mult = "множ" in low or "multiplication" in low
     has_div = "ділен" in low or "division" in low
     has_tasks = "задач" in low or "word problem" in low or "task" in low
     has_geometry = any(token in low for token in ("периметр", "площа", "геометр", "rectangle", "perimeter", "area", "geometry"))
@@ -73,7 +73,7 @@ def _topic_focus_hint(topic: str) -> str:
         return "Use only rectangle-focused tasks: sides, lengths, perimeter calculations, comparison of perimeters."
     if "множ" in low and "ділен" in low and number:
         return f"Use only multiplication/division tasks with {number} in актуалізація and закріплення."
-    if "РјРЅРѕР¶" in low and number:
+    if "множ" in low and number:
         return f"Use only multiplication-by-{number} tasks in актуалізація and закріплення."
     if "ділен" in low and number:
         return f"Use only division-by-{number} tasks in актуалізація and закріплення."

@@ -12,6 +12,7 @@ psycopg2-binary==2.9.11
 uvicorn==0.41.0
 aiofiles
 aiosmtplib
+python-multipart
 requests
 google-auth
 google-genai

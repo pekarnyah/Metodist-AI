@@ -619,7 +619,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={logout}
-                    className="inline-flex items-center justify-center rounded-lg bg-red-500/10 text-red-500 px-4 py-3"
+                    className="danger-soft-button inline-flex items-center justify-center rounded-2xl px-4 py-3 transition-all duration-200"
                     aria-label="Вийти"
                   >
                     <LogOut size={16} />

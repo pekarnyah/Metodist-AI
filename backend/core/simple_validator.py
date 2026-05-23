@@ -90,8 +90,8 @@ WEAK_HOMEWORK_PHRASES = (
 
 MATH_TOKENS = (
     "периметр",
-    "РїСЂСЏРјРѕРєСѓС'",
-    "РјРЅРѕР¶",
+    "прямокут",
+    "множ",
     "ділен",
     "задач",
     "обчисл",
@@ -153,7 +153,7 @@ def _line_has_specific_content(line: str) -> bool:
         return True
     if "?" in line:
         return True
-    if re.search(r"\b\d+\s*[\+\-\*xС…Г—:\/]\s*\d+\b", lower):
+    if re.search(r"\b\d+\s*[\+\-\*xх×:\/]\s*\d+\b", lower):
         return True
     if any(token in lower for token in MATH_TOKENS):
         return True
@@ -407,13 +407,13 @@ def _narrow_topic_markers(topic: str) -> list[str]:
     if " 6" in topic_l:
         if "ділен" in topic_l and "множ" not in topic_l:
             return ["6", "ділен", ":"]
-        return ["6", "РјРЅРѕР¶", "Г—", "x", "С…"]
+        return ["6", "множ", "×", "x", "х"]
     if " 8" in topic_l:
         if "ділен" in topic_l and "множ" not in topic_l:
             return ["8", "ділен", ":"]
         if "множ" in topic_l and "ділен" in topic_l:
             return ["8", "множ", "ділен"]
-        return ["8", "РјРЅРѕР¶", "Г—", "x", "С…"]
+        return ["8", "множ", "×", "x", "х"]
     return [token for token in MATH_TOKENS if token in topic_l]
 
 
@@ -571,15 +571,15 @@ def _artifact_signals(lines: list[str], topic: str) -> dict:
     broken_fill_hits = 0
 
     broken_math_patterns = (
-        r"\b\d+\s*[=:+\-xГ—*/]\s*[.\u2026]+\s*[+\-xГ—*/]?\s*[.\u2026]*\b",
-        r"\b\d+\s*[=:+\-xГ—*/]\s*[+\-xГ—*/]\s*\b",
-        r"\b[=:+\-xГ—*/]\s*[.\u2026]+\b",
+        r"\b\d+\s*[=:+\-xх×*/]\s*[.\u2026]+\s*[+\-xх×*/]?\s*[.\u2026]*\b",
+        r"\b\d+\s*[=:+\-xх×*/]\s*[+\-xх×*/]\s*\b",
+        r"\b[=:+\-xх×*/]\s*[.\u2026]+\b",
         r"\b\d+\s*=\.\s*\+\.",
     )
     malformed_fill_patterns = (
         r"[.\u2026]{2,}",
-        r"\b\d+\s*[=:+\-xГ—*/]\s*[.\u2026]+\b",
-        r"\b[.\u2026]+\s*[+\-xГ—*/]\s*[.\u2026]+\b",
+        r"\b\d+\s*[=:+\-xх×*/]\s*[.\u2026]+\b",
+        r"\b[.\u2026]+\s*[+\-xх×*/]\s*[.\u2026]+\b",
     )
 
     for raw in lines:

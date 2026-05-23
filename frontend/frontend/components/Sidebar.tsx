@@ -54,7 +54,7 @@ type MenuItem = {
 };
 
 const surfaceCardClass =
-  'product-surface interactive-lift rounded-lg border border-slate-200/70 bg-white/85 shadow-sm  dark:border-white/10 dark:bg-white/[0.04]';
+  'product-surface interactive-lift rounded-2xl border border-slate-200/70 bg-white/85 shadow-sm  dark:border-white/10 dark:bg-white/[0.04]';
 
 export default function Sidebar({
   activeTab,
@@ -152,7 +152,7 @@ export default function Sidebar({
       <aside className="hidden md:flex h-screen w-72 flex-col border-r border-slate-200/70 bg-white/78 p-5  dark:border-white/10 dark:bg-[#0f1117]/82">
         <div className={`${surfaceCardClass} p-4`}>
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-pink-500 text-white shadow-sm ">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-500 text-white shadow-sm ">
               <BookOpenCheck size={20} />
             </div>
             <div>
@@ -166,7 +166,7 @@ export default function Sidebar({
 
         <div className={`${surfaceCardClass} mt-4 p-4`}>
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
               {userProfile.avatar_url ? (
                 <img src={getFullUrl(userProfile.avatar_url)} className="h-full w-full object-cover" alt="" />
               ) : (
@@ -195,7 +195,7 @@ export default function Sidebar({
                 <button
                   key={item.id}
                   onClick={() => handleSelectTab(item.id)}
-                  className={`flex w-full items-center justify-between rounded-lg px-4 py-3 text-left transition-all duration-200 ${
+                  className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-all duration-200 ${
                     isActive
                       ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm '
                       : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-white/65 dark:hover:bg-white/[0.05] dark:hover:text-white'
@@ -216,7 +216,7 @@ export default function Sidebar({
               <div className="px-2 pb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-white/35">Управління</div>
               <button
                 onClick={() => handleSelectTab('admin')}
-                className={`flex w-full items-center justify-between rounded-lg px-4 py-3 text-left transition-all duration-200 ${
+                className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition-all duration-200 ${
                   activeTab === 'admin'
                     ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-black'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-white/65 dark:hover:bg-white/[0.05] dark:hover:text-white'
@@ -242,7 +242,7 @@ export default function Sidebar({
           </button>
           <button
             onClick={logout}
-            className="flex items-center justify-center gap-2 rounded-lg border border-red-500/10 bg-red-500/10 px-3 py-4 text-xs font-semibold uppercase tracking-wide text-red-600 transition-all duration-200 hover:bg-red-500 hover:text-white dark:text-red-400"
+            className="danger-soft-button flex items-center justify-center gap-2 rounded-2xl px-3 py-4 text-xs font-semibold uppercase tracking-wide transition-all duration-200"
           >
             <LogOut size={16} />
             Вийти
@@ -273,7 +273,7 @@ export default function Sidebar({
               <div className={`${surfaceCardClass} p-4`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
+                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5">
                       {userProfile.avatar_url ? (
                         <img src={getFullUrl(userProfile.avatar_url)} className="h-full w-full object-cover" alt="" />
                       ) : (
@@ -291,7 +291,7 @@ export default function Sidebar({
                   <button
                     type="button"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-white"
                     aria-label="Закрити меню"
                   >
                     <X size={18} />
@@ -306,7 +306,7 @@ export default function Sidebar({
                     <button
                       key={item.id}
                       onClick={() => handleSelectTab(item.id)}
-                      className={`rounded-lg border px-4 py-4 text-left transition ${
+                      className={`rounded-2xl border px-4 py-4 text-left transition ${
                         isActive
                           ? 'border-pink-500 bg-pink-500 text-white shadow-sm '
                           : 'border-slate-200/70 bg-slate-50/80 text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-white/80'
@@ -324,7 +324,7 @@ export default function Sidebar({
                 {isAdmin && (
                   <button
                     onClick={() => handleSelectTab('admin')}
-                    className={`rounded-lg border px-4 py-4 text-left transition ${
+                    className={`rounded-2xl border px-4 py-4 text-left transition ${
                       activeTab === 'admin'
                         ? 'border-slate-900 bg-slate-900 text-white shadow-sm dark:border-white dark:bg-white dark:text-black'
                         : 'border-slate-200/70 bg-slate-50/80 text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-white/80'
@@ -350,7 +350,7 @@ export default function Sidebar({
                 <button
                   type="button"
                   onClick={logout}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-red-500/10 px-4 py-4 text-xs font-semibold uppercase tracking-wide text-red-600 dark:text-red-400"
+                  className="danger-soft-button flex items-center justify-center gap-2 rounded-2xl px-4 py-4 text-xs font-semibold uppercase tracking-wide transition-all duration-200"
                 >
                   <LogOut size={16} />
                   Вийти
@@ -369,7 +369,7 @@ export default function Sidebar({
               <button
                 key={item.id}
                 onClick={() => handleSelectTab(item.id)}
-                className={`relative flex flex-col items-center gap-1 rounded-lg px-2 py-2.5 transition ${
+                className={`relative flex flex-col items-center gap-1 rounded-2xl px-2 py-2.5 transition ${
                   isActive
                     ? 'bg-pink-500 text-white shadow-sm '
                     : 'bg-slate-100/85 text-slate-700 dark:bg-white/5 dark:text-white/75'
@@ -393,7 +393,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(true)}
-            className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2.5 transition ${
+            className={`flex flex-col items-center gap-1 rounded-2xl px-2 py-2.5 transition ${
               isMoreActive || isMobileMenuOpen
                 ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-black'
                 : 'bg-slate-100/85 text-slate-700 dark:bg-white/5 dark:text-white/75'

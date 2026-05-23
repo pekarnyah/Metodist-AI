@@ -22,6 +22,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 ENV = os.getenv("ENV", "development").lower()
+LOG_OTP = os.getenv("LOG_OTP", "").lower() in {"1", "true", "yes"}
 COOKIE_SECURE = os.getenv("COOKIE_SECURE")
 if COOKIE_SECURE is None:
     COOKIE_SECURE = ENV == "production"

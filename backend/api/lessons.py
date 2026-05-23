@@ -18,6 +18,8 @@ from pydantic import BaseModel
 from typing import List, Literal
 from fastapi import Query
 from docx import Document
+from docx.table import Table
+from docx.text.paragraph import Paragraph
 
 from db.database import get_db
 from db.models import GenerationDiagnostic, User, UserLesson
@@ -276,7 +278,23 @@ def _write_json_utf8(path: Path, payload: dict):
 
 def _extract_docx_text(path: Path) -> str:
     doc = Document(str(path))
-    lines = [paragraph.text.strip() for paragraph in doc.paragraphs if paragraph.text and paragraph.text.strip()]
+    lines: list[str] = []
+    for child in doc.element.body.iterchildren():
+        if child.tag.endswith("}p"):
+            paragraph = Paragraph(child, doc)
+            text = paragraph.text.strip()
+            if text:
+                lines.append(text)
+        elif child.tag.endswith("}tbl"):
+            table = Table(child, doc)
+            for row in table.rows:
+                cells = [
+                    " / ".join(paragraph.text.strip() for paragraph in cell.paragraphs if paragraph.text.strip())
+                    for cell in row.cells
+                ]
+                row_text = " | ".join(cell for cell in cells if cell).strip()
+                if row_text:
+                    lines.append(row_text)
     return "\n".join(lines).strip()
 
 

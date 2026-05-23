@@ -63,7 +63,7 @@ class LessonRewriteGenerator:
         "ось оновлений варіант",
         "оновлений варіант",
         "привіт, математики",
-        "РїСЂРёРІС–С',",
+        "привіт,",
         "як редактор",
         "поясню нижче",
         "коментар",
@@ -97,14 +97,10 @@ class LessonRewriteGenerator:
         explicit_target = LessonRewriteGenerator._extract_operation_target_number(text)
         if explicit_target:
             numbers.add(explicit_target)
-        if "РЅР° 6" in text:
-            numbers.add("6")
-        if "РЅР° 7" in text:
-            numbers.add("7")
-        if "РЅР° 8" in text:
-            numbers.add("8")
-        if "РЅР° 9" in text:
-            numbers.add("9")
+        for match in re.finditer(r"(?:№|числ[ао]?|таблиц\w*)\s*(\d{1,2})\b", text):
+            numbers.add(match.group(1))
+        if any(token in text for token in ("множ", "ділен", "добут", "частк", "таблич")):
+            numbers.update(re.findall(r"\b\d{1,2}\b", text))
         return numbers
 
     @staticmethod
@@ -122,7 +118,7 @@ class LessonRewriteGenerator:
     @staticmethod
     def _topic_math_type(value: str) -> str:
         text = LessonRewriteGenerator._match_text(value)
-        has_mult = any(token in text for token in ("РјРЅРѕР¶", "РґРѕР±СѓС'"))
+        has_mult = any(token in text for token in ("множ", "добут"))
         has_div = any(token in text for token in ("ділен", "дiлен", "частк"))
         has_table = "таблич" in text
         has_tasks = "задач" in text
@@ -191,6 +187,12 @@ class LessonRewriteGenerator:
             score += 24.0
         elif loose_type_match:
             score += 8.0
+        elif topic_math_type != "generic" and doc_math_type != "generic":
+            score -= 18.0
+        if requested_numbers and doc_numbers and not number_overlap:
+            score -= 60.0
+        elif requested_numbers and not doc_numbers and self._is_narrow_topic(topic):
+            score -= 4.0
         try:
             size_mb = path.stat().st_size / (1024 * 1024)
         except Exception:
@@ -226,13 +228,13 @@ class LessonRewriteGenerator:
         scored.sort(key=lambda item: item["score"], reverse=True)
 
         if not scored:
-            return doc_paths[:1]
+            return doc_paths[: max(1, max_refs)]
 
         fallback_refs_raw = os.getenv("GENERATOR_REWRITE_FALLBACK_REFS", "3")
         try:
-            fallback_refs = max(1, min(3, int(fallback_refs_raw)))
+            fallback_refs = max(1, min(3, max_refs, int(fallback_refs_raw)))
         except ValueError:
-            fallback_refs = 3
+            fallback_refs = max(1, min(3, max_refs))
 
         top = scored[0]
         selected = [top["path"]]
@@ -248,7 +250,7 @@ class LessonRewriteGenerator:
         if not strong_match and top_gap < 8.0:
             selected = [item["path"] for item in scored[:fallback_refs]]
 
-        return selected
+        return selected[: max(1, max_refs)]
 
     def extract_reference_text(self, paths: list[Path], *, max_chars_per_doc: int = 6000) -> list[dict]:
         refs = []
@@ -269,14 +271,9 @@ class LessonRewriteGenerator:
         paragraphs = [line.strip() for line in lesson_text.splitlines() if line.strip()]
         if not paragraphs:
             paragraphs = ["Конспект підготовлено за темою уроку.", "Проведіть урок за послідовністю завдань."]
-        header_fields = [
-            {"label": "Тема", "value": topic or "—", "style": "Metodist Body"},
-            {"label": "Клас", "value": grade or "—", "style": "Metodist Body"},
-            {"label": "Предмет", "value": subject or "—", "style": "Metodist Body"},
-        ]
-
         return {
-            "header_fields": header_fields,
+            "header_fields": [],
+            "suppress_default_title": True,
             "sections": [
                 {
                     "title": "",
@@ -420,6 +417,7 @@ class LessonRewriteGenerator:
         cleaned_lines = []
         mentions_seen = 0
         mention_limit = 3
+        previous_content_line = ""
 
         for raw in lines:
             line = raw.strip()
@@ -428,14 +426,20 @@ class LessonRewriteGenerator:
                 continue
 
             low = line.lower()
+            previous_key = previous_content_line.rstrip(":").lower()
+            is_topic_field_value = previous_key in {"тема", "тема уроку"}
             if re.fullmatch(rf"[\(\[\{{\s:;,\-–—]*{topic_escaped}[\)\]\}}\s:;,\-–—]*", line, flags=re.IGNORECASE):
+                if is_topic_field_value:
+                    cleaned_lines.append(line)
+                    previous_content_line = line
                 continue
 
             # Remove typical suffix echoes: "(<topic>)", ": (<topic>)", "= (<topic>)", "... <topic>"
             line = re.sub(rf"\s*[:=]\s*\(\s*{topic_escaped}\s*\)\s*$", "", line, flags=re.IGNORECASE)
             line = re.sub(rf"\s*\(\s*{topic_escaped}\s*\)\s*$", "", line, flags=re.IGNORECASE)
-            line = re.sub(rf"\s*[:=]\s*{topic_escaped}\s*$", "", line, flags=re.IGNORECASE)
-            line = re.sub(rf"\s*[–—\-:;,\.]\s*{topic_escaped}\s*$", "", line, flags=re.IGNORECASE)
+            if not is_topic_field_value:
+                line = re.sub(rf"\s*[:=]\s*{topic_escaped}\s*$", "", line, flags=re.IGNORECASE)
+                line = re.sub(rf"\s*[–—\-:;,\.]\s*{topic_escaped}\s*$", "", line, flags=re.IGNORECASE)
             line = generic_tail_re.sub("", line)
             line = re.sub(r"\s*[:=]\s*\(\s*(?:тема|теми|за\s+темою)\s+уроку\s*\)\s*$", "", line, flags=re.IGNORECASE)
 
@@ -455,8 +459,9 @@ class LessonRewriteGenerator:
             mentions_seen += exact_mentions_here
 
             line = re.sub(r"\s{2,}", " ", line).strip(" \t:;,-–—")
-            if line and line.lower() != topic_lower:
+            if line and (line.lower() != topic_lower or is_topic_field_value):
                 cleaned_lines.append(line)
+                previous_content_line = line
 
         return normalize_lesson_text("\n".join(cleaned_lines))
 
@@ -464,7 +469,7 @@ class LessonRewriteGenerator:
     def _topic_focus_profile(topic: str) -> dict:
         low = str(topic or "").lower()
         number = LessonRewriteGenerator._extract_operation_target_number(low)
-        has_mult = "РјРЅРѕР¶" in low
+        has_mult = "множ" in low
         has_div = "ділен" in low
         if "периметр" in low and "прямокут" in low:
             return {
@@ -477,9 +482,9 @@ class LessonRewriteGenerator:
                 "markers": [number, "множ", "ділен"],
                 "anchor": f"множення і ділення на {number}",
             }
-        if "РјРЅРѕР¶" in low and number:
+        if "множ" in low and number:
             return {
-                "markers": [number, "РјРЅРѕР¶"],
+                "markers": [number, "множ"],
                 "anchor": f"множення на {number}",
             }
         if "ділен" in low and number:
@@ -510,6 +515,92 @@ class LessonRewriteGenerator:
         tokens = [token for token in re.findall(r"[A-Za-z\u0400-\u04FF0-9']+", low) if len(token) >= 4]
         return {"markers": tokens[:4], "anchor": str(topic or "").strip()}
 
+    @staticmethod
+    def _role_line_label(line: str) -> str:
+        match = re.match(r"^\s*(учитель|вчитель|учні|завдання/вправа|завдання|вправа)\s*:", str(line or ""), flags=re.IGNORECASE)
+        if not match:
+            return ""
+        label = match.group(1).lower()
+        if label == "вчитель":
+            return "учитель"
+        if label in {"завдання", "вправа"}:
+            return "завдання/вправа"
+        return label
+
+    @classmethod
+    def _focused_role_line(cls, *, topic: str, section: str, role: str) -> str:
+        low = str(topic or "").lower()
+        number = cls._extract_operation_target_number(low)
+        section_kind = "practice" if "закріп" in section else "actualization"
+        has_mult = "множ" in low
+        has_div = "ділен" in low
+
+        if "периметр" in low and "прямокут" in low:
+            data = {
+                "actualization": {
+                    "учитель": "Учитель: пропонує пригадати, що прямокутник має протилежні сторони однакової довжини, і показує сторони 4 см та 2 см.",
+                    "учні": "Учні: називають довжину і ширину прямокутника, показують усі його сторони на рисунку.",
+                    "завдання/вправа": "Завдання/вправа: знайти суму сторін прямокутника зі сторонами 4 см і 2 см: 4 + 2 + 4 + 2.",
+                },
+                "practice": {
+                    "учитель": "Учитель: дає прямокутники зі сторонами 6 см і 3 см, 5 см і 4 см та просить обчислити периметр.",
+                    "учні": "Учні: записують периметр прямокутника як суму всіх сторін і пояснюють обчислення.",
+                    "завдання/вправа": "Завдання/вправа: обчислити периметр прямокутників: 6 см і 3 см; 5 см і 4 см; 8 см і 2 см.",
+                },
+            }
+            return data.get(section_kind, {}).get(role, "")
+
+        if not number:
+            return ""
+
+        if has_mult and has_div:
+            data = {
+                "actualization": {
+                    "учитель": f"Учитель: пропонує пригадати таблицю множення числа {number} і зв'язок множення з діленням.",
+                    "учні": f"Учні: обчислюють вирази {number}×2, {number}×3, {number}×4 і складають обернені приклади на ділення.",
+                    "завдання/вправа": f"Завдання/вправа: обчислити {number}×2, {number}×3, {number}×4; скласти приклади {int(number)*2}:{number}, {int(number)*3}:{number}, {int(number)*4}:{number}.",
+                },
+                "practice": {
+                    "учитель": f"Учитель: дає змішані приклади на множення і ділення з числом {number} та коротку задачу.",
+                    "учні": f"Учні: обчислюють добутки і частки з числом {number}, перевіряють ділення множенням.",
+                    "завдання/вправа": f"Завдання/вправа: розв'язати {number}×5, {number}×7, {int(number)*6}:{number}, {int(number)*8}:{number}; скласти задачу про {number} однакових груп.",
+                },
+            }
+            return data.get(section_kind, {}).get(role, "")
+
+        if has_mult:
+            data = {
+                "actualization": {
+                    "учитель": f"Учитель: пропонує замінити додавання однакових доданків множенням на {number}.",
+                    "учні": f"Учні: пояснюють, що {number}+{number}+{number} можна записати як {number}×3.",
+                    "завдання/вправа": f"Завдання/вправа: замінити додавання множенням і обчислити: {number}+{number}; {number}+{number}+{number}; {number}+{number}+{number}+{number}.",
+                },
+                "practice": {
+                    "учитель": f"Учитель: дає приклади і задачу на застосування таблиці множення числа {number}.",
+                    "учні": f"Учні: обчислюють вирази на множення числа {number} і пояснюють спосіб знаходження добутку.",
+                    "завдання/вправа": f"Завдання/вправа: обчислити {number}×4, {number}×6, {number}×7, {number}×9; розв'язати задачу про {number} коробок по 5 олівців.",
+                },
+            }
+            return data.get(section_kind, {}).get(role, "")
+
+        if has_div:
+            multiples = [int(number) * item for item in (2, 3, 4, 5, 6, 7, 8, 9)]
+            data = {
+                "actualization": {
+                    "учитель": f"Учитель: пропонує пригадати добутки числа {number}, щоб підвести учнів до ділення на {number}.",
+                    "учні": f"Учні: добирають частку за таблицею множення і пояснюють, чому {multiples[2]}:{number}=4.",
+                    "завдання/вправа": f"Завдання/вправа: за рівностями {number}×2={multiples[0]}, {number}×3={multiples[1]}, {number}×4={multiples[2]} скласти приклади {multiples[0]}:{number}, {multiples[1]}:{number}, {multiples[2]}:{number}.",
+                },
+                "practice": {
+                    "учитель": f"Учитель: дає вирази і коротку задачу на ділення на {number}.",
+                    "учні": f"Учні: обчислюють частки на ділення на {number} і перевіряють відповіді множенням.",
+                    "завдання/вправа": f"Завдання/вправа: обчислити {multiples[3]}:{number}, {multiples[4]}:{number}, {multiples[5]}:{number}, {multiples[7]}:{number}; розв'язати задачу: {multiples[5]} олівців розклали порівну у {number} пеналів.",
+                },
+            }
+            return data.get(section_kind, {}).get(role, "")
+
+        return ""
+
     @classmethod
     def _enforce_topic_focus_sections(cls, text: str, topic: str) -> str:
         value = normalize_lesson_text(text)
@@ -533,6 +624,7 @@ class LessonRewriteGenerator:
         headings = {heading.lower() for heading in cls.REQUIRED_SECTION_HEADINGS + cls.LESSON_FLOW_HEADINGS}
         lines = value.splitlines()
         current_section = ""
+        current_section_has_focused_roles = False
         output = []
         for raw in lines:
             line = raw.strip()
@@ -540,14 +632,20 @@ class LessonRewriteGenerator:
             matched_heading = next((heading for heading in headings if lower == heading or lower.startswith(f"{heading}:")), "")
             if matched_heading:
                 current_section = matched_heading
+                current_section_has_focused_roles = False
                 output.append(line)
                 continue
             if not line:
                 output.append(line)
                 continue
             if current_section in target_sections:
-                if not any(marker in lower for marker in markers):
-                    output.append(line)
+                role = cls._role_line_label(line)
+                focused = cls._focused_role_line(topic=topic, section=current_section, role=role)
+                if focused:
+                    current_section_has_focused_roles = True
+                    output.append(focused)
+                    continue
+                if current_section_has_focused_roles and not role:
                     continue
             output.append(line)
         return normalize_lesson_text("\n".join(output))
@@ -645,6 +743,7 @@ class LessonRewriteGenerator:
         runtime_trace: dict,
         timeout_sec: float,
         temperature: float = 0.35,
+        required: bool = False,
     ) -> str:
         response = await self.legacy._execute_model_call(
             call_name=call_name,
@@ -655,7 +754,17 @@ class LessonRewriteGenerator:
             timeout_sec=timeout_sec,
             response_mime_type="text/plain",
         )
-        return str(getattr(response, "text", "") if response else "").strip()
+        text = str(getattr(response, "text", "") if response else "").strip()
+        if required and not text:
+            error = ""
+            if isinstance(runtime_trace, dict):
+                for item in reversed(runtime_trace.get("model_calls") or []):
+                    if isinstance(item, dict) and item.get("name") == call_name:
+                        error = str(item.get("error") or "").strip()
+                        break
+            detail = f": {error}" if error else ""
+            raise RuntimeError(f"{call_name} did not return lesson text{detail}")
+        return text
 
     async def generate_lesson_files(
         self,
@@ -721,6 +830,7 @@ class LessonRewriteGenerator:
             runtime_trace=runtime_trace,
             timeout_sec=timeout_1,
             temperature=0.4,
+            required=True,
         )
         lesson_text = self._cleanup_model_text(lesson_text)
         lesson_text = self._enforce_topic_focus_sections(lesson_text, topic)

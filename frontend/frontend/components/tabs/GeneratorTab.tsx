@@ -894,9 +894,11 @@ export default function GeneratorTab({ userProfile, API_BASE, fetchProfile, setA
   return (
     <div className="space-y-10 pb-24">
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-pink-500/20 bg-pink-500/10 p-5">
+        <div className="product-surface overflow-hidden p-5">
           <div className="flex items-start gap-3">
-            <Sparkles className="text-pink-500 mt-1" size={18} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 text-white shadow-[0_12px_28px_rgba(236,72,153,0.28)]">
+              <Sparkles size={18} />
+            </div>
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-wide text-pink-500 dark:text-pink-300">Статус сервісу</div>
               <p className="text-sm font-bold opacity-80 leading-relaxed">
@@ -905,9 +907,11 @@ export default function GeneratorTab({ userProfile, API_BASE, fetchProfile, setA
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-5">
+        <div className="product-surface overflow-hidden p-5">
           <div className="flex items-start gap-3">
-            <Loader2 className={`mt-1 text-amber-500 ${loading ? 'animate-spin' : ''}`} size={18} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-orange-400 text-amber-950 shadow-[0_12px_28px_rgba(245,158,11,0.20)]">
+              <Loader2 className={loading ? 'animate-spin' : ''} size={18} />
+            </div>
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-300">Черга генерації</div>
               <p className="text-sm font-bold opacity-80 leading-relaxed">
@@ -921,9 +925,11 @@ export default function GeneratorTab({ userProfile, API_BASE, fetchProfile, setA
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-pink-500/20 bg-pink-500/10 p-5">
+        <div className="product-surface overflow-hidden p-5">
           <div className="flex items-start gap-3">
-            <Zap className="text-pink-500 mt-1" size={18} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-300 to-teal-400 text-emerald-950 shadow-[0_12px_28px_rgba(16,185,129,0.18)]">
+              <Zap size={18} />
+            </div>
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-wide text-pink-600 dark:text-pink-300">Ваш баланс</div>
               <p className="text-sm font-bold opacity-80 leading-relaxed">
@@ -1176,7 +1182,7 @@ export default function GeneratorTab({ userProfile, API_BASE, fetchProfile, setA
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-gradient-to-br from-pink-500 to-rose-500 p-6 md:p-10 rounded-xl md:rounded-xl text-white shadow-sm relative overflow-hidden"
+        className="generator-workbench p-6 md:p-10 rounded-xl text-white relative overflow-hidden"
       >
         <div className="relative z-10 space-y-8">
           <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
@@ -1193,10 +1199,31 @@ export default function GeneratorTab({ userProfile, API_BASE, fetchProfile, setA
               </p>
             </div>
 
-            <div className="rounded-xl border border-white/20 bg-white/10  px-5 py-4 min-w-[240px]">
-              <div className="text-[10px] font-semibold uppercase tracking-wide opacity-60 mb-2">Активний режим</div>
-              <div className="text-2xl font-semibold">{selectedMode.label}</div>
-              <div className="text-sm font-bold text-white/75 mt-1">{selectedMode.hint}</div>
+            <div className="metric-glass min-w-[280px] rounded-xl px-5 py-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-white/55 mb-2">Активний режим</div>
+                  <div className="text-2xl font-semibold">{selectedMode.label}</div>
+                  <div className="text-sm font-bold text-white/70 mt-1">{selectedMode.hint}</div>
+                </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-pink-600 shadow-sm">
+                  <FileText size={22} />
+                </div>
+              </div>
+              <div className="mt-5 rounded-lg bg-white/[0.92] p-4 text-slate-900 shadow-[0_18px_50px_rgba(15,23,42,0.22)]">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-pink-500">DOCX preview</div>
+                <div className="mt-2 h-2 w-3/4 rounded-full bg-slate-300" />
+                <div className="mt-3 space-y-2">
+                  <div className="h-1.5 rounded-full bg-slate-200" />
+                  <div className="h-1.5 w-5/6 rounded-full bg-slate-200" />
+                  <div className="h-1.5 w-2/3 rounded-full bg-slate-200" />
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="h-8 rounded bg-pink-100" />
+                  <div className="h-8 rounded bg-amber-100" />
+                  <div className="h-8 rounded bg-emerald-100" />
+                </div>
+              </div>
             </div>
           </div>
 
