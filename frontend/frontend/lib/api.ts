@@ -130,7 +130,7 @@ async function ensureCsrfCookie(input: RequestInfo | URL): Promise<void> {
       cache: 'no-store',
     });
   } catch {
-    // refresh flow will fail normally below if csrf cannot be restored
+    // Refresh flow will fail normally below if csrf cannot be restored.
   }
 }
 
@@ -223,4 +223,3 @@ export async function apiBlob(
   const res = await apiRequest(input, init, fallbackMessage);
   return res.blob();
 }
-
